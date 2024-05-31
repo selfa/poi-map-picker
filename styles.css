@@ -1,0 +1,113 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background-color: #f4f4f4;
+    width: 200px;
+}
+
+.top-buttons {
+    flex: 1;
+}
+
+#toggleLoggingButton {
+    margin-top: auto;
+}
+
+.map-container {
+    position: relative;
+    margin-left: 20px;
+}
+
+.map {
+    width: 800px;
+    height: auto;
+}
+
+.poi {
+    position: absolute;
+    background-color: red;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#stormpoint-poi-1 { top: 250px; left: 224px; }
+#stormpoint-poi-2 { top: 314px; left: 191px; }
+#stormpoint-poi-3 { top: 181px; left: 290px; }
+#stormpoint-poi-4 { top: 126px; left: 164px; }
+#stormpoint-poi-5 { top: 251px; left: 80px; }
+#stormpoint-poi-6 { top: 382px; left: 124px; }
+#stormpoint-poi-7 { top: 559px; left: 132px; }
+#stormpoint-poi-8 { top: 629px; left: 235px; }
+#stormpoint-poi-9 { top: 538px; left: 292px; }
+#stormpoint-poi-10 { top: 379px; left: 268px; }
+#stormpoint-poi-11 { top: 305px; left: 378px; }
+#stormpoint-poi-12 { top: 252px; left: 506px; }
+#stormpoint-poi-13 { top: 125px; left: 424px; }
+#stormpoint-poi-14 { top: 94px; left: 591px; }
+#stormpoint-poi-15 { top: 190px; left: 627px; }
+#stormpoint-poi-16 { top: 300px; left: 690px; }
+#stormpoint-poi-17 { top: 312px; left: 580px; }
+#stormpoint-poi-18 { top: 413px; left: 575px; }
+#stormpoint-poi-19 { top: 490px; left: 585px; }
+#stormpoint-poi-20 { top: 606px; left: 628px; }
+#stormpoint-poi-21 { top: 653px; left: 521px; }
+#stormpoint-poi-22 { top: 680px; left: 409px; }
+#stormpoint-poi-23 { top: 540px; left: 433px; }
+#stormpoint-poi-24 { top: 454px; left: 369px; }
+#stormpoint-poi-25 { top: 382px; left: 461px; }
+
+#worldsedge-poi-1 { top: 138px; left: 296px; }
+#worldsedge-poi-2 { top: 193px; left: 185px; }
+#worldsedge-poi-3 { top: 272px; left: 206px; }
+#worldsedge-poi-4 { top: 310px; left: 116px; }
+#worldsedge-poi-5 { top: 368px; left: 261px; }
+#worldsedge-poi-6 { top: 410px; left: 135px; }
+#worldsedge-poi-7 { top: 467px; left: 223px; }
+#worldsedge-poi-8 { top: 604px; left: 168px; }
+#worldsedge-poi-9 { top: 493px; left: 339px; }
+#worldsedge-poi-10 { top: 674px; left: 309px; }
+#worldsedge-poi-11 { top: 609px; left: 378px; }
+#worldsedge-poi-12 { top: 548px; left: 499px; }
+#worldsedge-poi-13 { top: 721px; left: 413px; }
+#worldsedge-poi-14 { top: 739px; left: 550px; }
+#worldsedge-poi-15 { top: 653px; left: 581px; }
+#worldsedge-poi-16 { top: 569px; left: 627px; }
+#worldsedge-poi-17 { top: 485px; left: 583px; }
+#worldsedge-poi-18 { top: 384px; left: 536px; }
+#worldsedge-poi-19 { top: 344px; left: 395px; }
+#worldsedge-poi-20 { top: 181px; left: 403px; }
+#worldsedge-poi-21 { top: 235px; left: 495px; }
+#worldsedge-poi-22 { top: 107px; left: 510px; }
+#worldsedge-poi-23 { top: 216px; left: 621px; }
+#worldsedge-poi-24 { top: 317px; left: 643px; }
+
+.poi-table-container {
+    padding: 20px;
+    margin-left: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
