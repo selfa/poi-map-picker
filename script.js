@@ -21,12 +21,13 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     const poiList = document.getElementById("poiList");
-    populatePOIList();
-
-    loadPOIState();
-
     const map1 = document.getElementById("map1");
     const map2 = document.getElementById("map2");
+
+    loadCurrentMap();
+    populatePOIList();
+    loadPOIState();
+
     map1.addEventListener("click", logCoordinates);
     map2.addEventListener("click", logCoordinates);
 
@@ -44,7 +45,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     function populatePOIList() {
-        console.log(`Populating POI list for ${currentMap}`);
         poiList.innerHTML = '<option value="" disabled selected>Select POI</option>';
         for (let i = 0; i < poiNames[currentMap].length; i++) {
             let option = document.createElement("option");
@@ -57,8 +57,6 @@ document.addEventListener("DOMContentLoaded", function() {
     function switchMap(mapId) {
         currentMap = mapId;
 
-        console.log(`Switching to map: ${mapId}`);
-
         document.getElementById("map1").style.display = "none";
         document.getElementById("map2").style.display = "none";
         document.getElementById(mapId === "stormpoint" ? "map1" : "map2").style.display = "block";
@@ -68,167 +66,170 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById(`${mapId}-pois`).style.display = "block";
 
         populatePOIList();
-    }
-});
-
-function toggleLogging() {
-    loggingEnabled = !loggingEnabled;
-    alert(loggingEnabled ? "Coordinate logging enabled" : "Coordinate logging disabled");
-}
-
-function logCoordinates(event) {
-    if (!loggingEnabled) return;
-
-    const map = event.currentTarget;
-    const rect = map.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    alert(`Top: ${y}px; Left: ${x}px;`);
-}
-
-function pickPOI() {
-    const teamName = document.getElementById("teamName").value;
-    const poiList = document.getElementById("poiList");
-    const poiNumber = poiList.value;
-    const poiElement = document.getElementById(currentMap + "-poi-" + poiNumber);
-
-    if (poiElement.style.backgroundColor === "green") {
-        alert("This POI has already been picked. Please select another POI.");
-        return;
+        saveCurrentMap();
+        loadPOIState();
     }
 
-    console.log(`Picking POI ${poiNumber} for team ${teamName}`);
+    function saveCurrentMap() {
+        localStorage.setItem('currentMap', currentMap);
+    }
 
-    if (teamName && poiNumber) {
-        poiElement.style.backgroundColor = "green";
-        poiElement.textContent = poiElement.textContent.split(" - ")[0] + ` - ${teamName}`;
-        document.getElementById("teamName").value = "";
+    function loadCurrentMap() {
+        const savedMap = localStorage.getItem('currentMap');
+        if (savedMap) {
+            currentMap = savedMap;
+            switchMap(currentMap);
+        } else {
+            switchMap('stormpoint');
+        }
+    }
 
-        // Update the table
+    function toggleLogging() {
+        loggingEnabled = !loggingEnabled;
+        alert(loggingEnabled ? "Coordinate logging enabled" : "Coordinate logging disabled");
+    }
+
+    function logCoordinates(event) {
+        if (!loggingEnabled) return;
+
+        const map = event.currentTarget;
+        const rect = map.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        alert(`Top: ${y}px; Left: ${x}px;`);
+    }
+
+    function pickPOI() {
+        const teamName = document.getElementById("teamName").value;
+        const poiList = document.getElementById("poiList");
+        const poiNumber = poiList.value;
+        const poiElement = document.getElementById(currentMap + "-poi-" + poiNumber);
+
+        if (poiElement.style.backgroundColor === "green") {
+            alert("This POI has already been picked. Please select another POI.");
+            return;
+        }
+
+        if (teamName && poiNumber) {
+            poiElement.style.backgroundColor = "green";
+            poiElement.textContent = poiElement.textContent.split(" - ")[0] + ` - ${teamName}`;
+            document.getElementById("teamName").value = "";
+
+            const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
+            const newRow = poiTable.insertRow();
+            newRow.insertCell(0).innerText = poiList.options[poiList.selectedIndex].text;
+            newRow.insertCell(1).innerText = teamName;
+            newRow.insertCell(2).innerText = orderCount++;
+            newRow.style.backgroundColor = "green";
+            newRow.setAttribute("data-poi", currentMap + "-poi-" + poiNumber);
+
+            savePOIState();
+        } else {
+            alert("Please enter a team name and select a POI.");
+        }
+    }
+
+    function removePOI() {
+        const poiList = document.getElementById("poiList");
+        const poiNumber = poiList.value;
+        const poiElement = document.getElementById(currentMap + "-poi-" + poiNumber);
+
+        if (poiNumber) {
+            const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
+            const rows = poiTable.rows;
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].getAttribute("data-poi") === currentMap + "-poi-" + poiNumber) {
+                    poiTable.deleteRow(i);
+                    break;
+                }
+            }
+
+            poiElement.style.backgroundColor = "red";
+            poiElement.textContent = poiNumber;
+
+            recalculateDraftNumbers();
+
+            savePOIState();
+        } else {
+            alert("Please select a POI to remove.");
+        }
+    }
+
+    function resetPOIState() {
+        const maps = ["stormpoint", "worldsedge"];
+        maps.forEach(mapId => {
+            const poiElements = document.querySelectorAll(`#${mapId}-pois .poi`);
+            poiElements.forEach(poi => {
+                poi.style.backgroundColor = "red";
+                poi.textContent = poi.id.split('-').slice(-1)[0];
+            });
+        });
+
         const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
-        const newRow = poiTable.insertRow();
-        newRow.insertCell(0).innerText = poiList.options[poiList.selectedIndex].text;
-        newRow.insertCell(1).innerText = teamName;
-        newRow.insertCell(2).innerText = orderCount++;
-        newRow.style.backgroundColor = "green";
-        newRow.setAttribute("data-poi", currentMap + "-poi-" + poiNumber);
+        poiTable.innerHTML = '';
 
-        savePOIState();
-    } else {
-        alert("Please enter a team name and select a POI.");
+        orderCount = 1;
+        localStorage.removeItem('poiState-stormpoint');
+        localStorage.removeItem('poiState-worldsedge');
+        localStorage.removeItem('poiTableState-stormpoint');
+        localStorage.removeItem('poiTableState-worldsedge');
+        localStorage.removeItem('currentMap');
     }
-}
 
-function removePOI() {
-    const poiList = document.getElementById("poiList");
-    const poiNumber = poiList.value;
-    const poiElement = document.getElementById(currentMap + "-poi-" + poiNumber);
+    function savePOIState() {
+        const poiElements = document.querySelectorAll(`#${currentMap}-pois .poi`);
+        const poiState = Array.from(poiElements).map(poi => ({
+            id: poi.id,
+            textContent: poi.textContent,
+            backgroundColor: poi.style.backgroundColor
+        }));
+        localStorage.setItem(`poiState-${currentMap}`, JSON.stringify(poiState));
 
-    console.log(`Removing POI ${poiNumber}`);
+        const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
+        const poiTableState = Array.from(poiTable.rows).map(row => ({
+            poi: row.cells[0].innerText,
+            teamName: row.cells[1].innerText,
+            draft: row.cells[2].innerText,
+            dataPoi: row.getAttribute("data-poi")
+        }));
+        localStorage.setItem(`poiTableState-${currentMap}`, JSON.stringify(poiTableState));
+    }
 
-    if (poiNumber) {
-        // Remove from table
+    function loadPOIState() {
+        const poiState = JSON.parse(localStorage.getItem(`poiState-${currentMap}`));
+        if (poiState) {
+            poiState.forEach(state => {
+                const poiElement = document.getElementById(state.id);
+                if (poiElement) {
+                    poiElement.textContent = state.textContent;
+                    poiElement.style.backgroundColor = state.backgroundColor;
+                }
+            });
+        }
+
+        const poiTableState = JSON.parse(localStorage.getItem(`poiTableState-${currentMap}`));
+        if (poiTableState) {
+            const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
+            poiTable.innerHTML = '';
+            poiTableState.forEach(row => {
+                const newRow = poiTable.insertRow();
+                newRow.insertCell(0).innerText = row.poi;
+                newRow.insertCell(1).innerText = row.teamName;
+                newRow.insertCell(2).innerText = row.draft;
+                newRow.style.backgroundColor = "green";
+                newRow.setAttribute("data-poi", row.dataPoi);
+            });
+            orderCount = poiTableState.length + 1;
+        }
+    }
+
+    function recalculateDraftNumbers() {
         const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
         const rows = poiTable.rows;
         for (let i = 0; i < rows.length; i++) {
-            if (rows[i].getAttribute("data-poi") === currentMap + "-poi-" + poiNumber) {
-                poiTable.deleteRow(i);
-                break;
-            }
+            rows[i].cells[2].innerText = i + 1; // Reassign draft numbers
         }
-
-        // Reset POI element
-        poiElement.style.backgroundColor = "red";
-        poiElement.textContent = poiNumber;
-
-        // Recalculate draft numbers
-        recalculateDraftNumbers();
-
-        savePOIState();
-    } else {
-        alert("Please select a POI to remove.");
+        orderCount = rows.length + 1;
     }
-}
-
-function resetPOIState() {
-    console.log(`Resetting POI state for all maps`);
-
-    // Reset POIs for both maps
-    const maps = ["stormpoint", "worldsedge"];
-    maps.forEach(mapId => {
-        const poiElements = document.querySelectorAll(`#${mapId}-pois .poi`);
-        poiElements.forEach(poi => {
-            poi.style.backgroundColor = "red";
-            poi.textContent = poi.id.split('-').slice(-1)[0];
-        });
-    });
-
-    // Clear the table
-    const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
-    poiTable.innerHTML = '';
-
-    // Reset orderCount and remove localStorage items
-    localStorage.removeItem('poiState');
-    localStorage.removeItem('poiTableState');
-    orderCount = 1;
-}
-
-function savePOIState() {
-    console.log(`Saving POI state for ${currentMap}`);
-
-    const poiElements = document.querySelectorAll(`#${currentMap}-pois .poi`);
-    const poiState = Array.from(poiElements).map(poi => ({
-        id: poi.id,
-        textContent: poi.textContent,
-        backgroundColor: poi.style.backgroundColor
-    }));
-    localStorage.setItem('poiState', JSON.stringify(poiState));
-
-    const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
-    const poiTableState = Array.from(poiTable.rows).map(row => ({
-        poi: row.cells[0].innerText,
-        teamName: row.cells[1].innerText,
-        draft: row.cells[2].innerText,
-        dataPoi: row.getAttribute("data-poi")
-    }));
-    localStorage.setItem('poiTableState', JSON.stringify(poiTableState));
-}
-
-function loadPOIState() {
-    console.log(`Loading POI state`);
-
-    const poiState = JSON.parse(localStorage.getItem('poiState'));
-    if (poiState) {
-        poiState.forEach(state => {
-            const poiElement = document.getElementById(state.id);
-            if (poiElement) {
-                poiElement.textContent = state.textContent;
-                poiElement.style.backgroundColor = state.backgroundColor;
-            }
-        });
-    }
-
-    const poiTableState = JSON.parse(localStorage.getItem('poiTableState'));
-    if (poiTableState) {
-        const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
-        poiTableState.forEach(row => {
-            const newRow = poiTable.insertRow();
-            newRow.insertCell(0).innerText = row.poi;
-            newRow.insertCell(1).innerText = row.teamName;
-            newRow.insertCell(2).innerText = row.draft;
-            newRow.style.backgroundColor = "green";
-            newRow.setAttribute("data-poi", row.dataPoi);
-        });
-        orderCount = poiTableState.length + 1;
-    }
-}
-
-function recalculateDraftNumbers() {
-    const poiTable = document.getElementById("poiTable").getElementsByTagName('tbody')[0];
-    const rows = poiTable.rows;
-    for (let i = 0; i < rows.length; i++) {
-        rows[i].cells[2].innerText = i + 1; // Reassign draft numbers
-    }
-    orderCount = rows.length + 1;
-}
+});
